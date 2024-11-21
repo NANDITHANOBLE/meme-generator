@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Display</title>
+    <style>
+        body {
+            background-image: url('pasteldot.webp');
+            background-size: cover;
+            background-position: center;
+            color: #333;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        header {
+            background-color: rgba(118, 99, 140, 0.8);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(249, 249, 249, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        canvas {
+            border: 1px solid #000;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #6f4caf;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #9245a0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Your Generated Meme</h1>
+    </header>
+    
+    <div class="container">
+        <canvas id="meme-canvas"></canvas>
+        <button onclick="downloadMeme()">Download Meme</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const memeCanvas = document.getElementById('meme-canvas');
+            const ctx = memeCanvas.getContext('2d');
+            
+            const memeImageData = localStorage.getItem('memeDataUrl');
+            const topText = localStorage.getItem('topText') || '';
+            const bottomText = localStorage.getItem('bottomText') || '';
+            const textColor = localStorage.getItem('textColor') || '#FFFFFF';
+            const textAlign = localStorage.getItem('textAlign') || 'center';
+            const fontStyle = localStorage.getItem('fontStyle') || 'Impact';
+            const fontSize = localStorage.getItem('fontSize') || '40';
+
+            if (memeImageData) {
+                const memeImage = new Image();
+                memeImage.src = memeImageData;
+                memeImage.onload = function() {
+                    memeCanvas.width = memeImage.width;
+                    memeCanvas.height = memeImage.height;
+
+                    ctx.drawImage(memeImage, 0, 0); 
+                    drawText();
+                };
+            } else {
+                alert("No meme image found. Please create a meme first.");
+            }
+
+            function drawText() {
+                ctx.font = `${fontSize}px ${fontStyle}`;
+                ctx.fillStyle = textColor;
+                ctx.textAlign = textAlign;
+
+                if (topText) {
+                    const topTextWidth = ctx.measureText(topText).width;
+                    const topX = textAlign === 'center' ? memeCanvas.width / 2 - topTextWidth / 2 : (textAlign === 'left' ? 50 : memeCanvas.width - topTextWidth - 50);
+                    ctx.fillText(topText, topX, 50);
+                }
+
+                if (bottomText) {
+                    const bottomTextWidth = ctx.measureText(bottomText).width;
+                    const bottomX = textAlign === 'center' ? memeCanvas.width / 2 - bottomTextWidth / 2 : (textAlign === 'left' ? 50 : memeCanvas.width - bottomTextWidth - 50);
+                    ctx.fillText(bottomText, bottomX, memeCanvas.height - 50);
+                }
+            }
+        });
+
+        function downloadMeme() {
+            const memeCanvas = document.getElementById('meme-canvas');
+            const imageURL = memeCanvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = imageURL;
+            link.download = 'generated-meme.png';
+            link.click();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Meme</title>
+    <style>
+        body {
+            background-image: url('leaf.jpg');
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        input[type="color"], select, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        canvas {
+            margin-top: 20px;
+            border: 1px solid black;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Edit Meme</h1>
+    </header>
+    
+    <div class="container">
+        <label for="top-text">Top Text:</label>
+        <input type="text" id="top-text" />
+
+        <label for="bottom-text">Bottom Text:</label>
+        <input type="text" id="bottom-text" />
+
+        <label for="text-color">Text Color:</label>
+        <input type="color" id="text-color" />
+
+        <label for="font-style">Font Style:</label>
+        <select id="font-style">
+            <option value="Impact">Impact</option>
+            <option value="Arial">Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+        </select>
+
+        <label for="font-size">Font Size:</label>
+        <input type="number" id="font-size" value="40" min="10" max="100" />
+
+        <label for="text-align">Text Alignment:</label>
+        <select id="text-align">
+            <option value="left">Left</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+        </select>
+
+        <canvas id="meme-canvas"></canvas>
+
+        <button id="generate-button">Generate Meme</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const memeCanvas = document.getElementById('meme-canvas');
+            const ctx = memeCanvas.getContext('2d');
+            const generateButton = document.getElementById('generate-button');
+            const topTextInput = document.getElementById('top-text');
+            const bottomTextInput = document.getElementById('bottom-text');
+            const textColorInput = document.getElementById('text-color');
+            const fontStyleSelect = document.getElementById('font-style');
+            const textAlignSelect = document.getElementById('text-align');
+            const fontSizeInput = document.getElementById('font-size');
+
+            const memeImageData = localStorage.getItem('memeDataUrl');
+            const topText = localStorage.getItem('topText') || '';
+            const bottomText = localStorage.getItem('bottomText') || '';
+            const fontSize = localStorage.getItem('fontSize') || '40';
+
+            if (!memeImageData) {
+                alert("No meme image found. Please upload an image first.");
+                return;
+            }
+
+            const memeImage = new Image();
+            memeImage.src = memeImageData;
+
+            memeImage.onload = function() {
+                memeCanvas.width = memeImage.width;
+                memeCanvas.height = memeImage.height;
+                ctx.drawImage(memeImage, 0, 0); 
+
+                topTextInput.value = topText;
+                bottomTextInput.value = bottomText;
+                fontSizeInput.value = fontSize;
+
+                drawText();
+            };
+
+            function drawText() {
+                const topText = topTextInput.value || "";
+                const bottomText = bottomTextInput.value || "";
+                const textColor = textColorInput.value || '#FFFFFF';
+                const fontStyle = fontStyleSelect.value || 'Impact';
+                const textAlign = textAlignSelect.value || 'center';
+                const fontSize = fontSizeInput.value || 40;
+
+                ctx.clearRect(0, 0, memeCanvas.width, memeCanvas.height);
+                ctx.drawImage(memeImage, 0, 0);
+
+                ctx.font = `${fontSize}px ${fontStyle}`;
+                ctx.fillStyle = textColor;
+                ctx.textAlign = textAlign;
+
+                if (topText) {
+                    const topTextWidth = ctx.measureText(topText).width;
+                    const topX = textAlign === 'center' ? memeCanvas.width / 2 - topTextWidth / 2 : (textAlign === 'left' ? 50 : memeCanvas.width - topTextWidth - 50);
+                    ctx.fillText(topText, topX, 50);
+                }
+
+                if (bottomText) {
+                    const bottomTextWidth = ctx.measureText(bottomText).width;
+                    const bottomX = textAlign === 'center' ? memeCanvas.width / 2 - bottomTextWidth / 2 : (textAlign === 'left' ? 50 : memeCanvas.width - bottomTextWidth - 50);
+                    ctx.fillText(bottomText, bottomX, memeCanvas.height - 50);
+                }
+            }
+
+            topTextInput.addEventListener('input', drawText);
+            bottomTextInput.addEventListener('input', drawText);
+            textColorInput.addEventListener('input', drawText);
+            fontStyleSelect.addEventListener('change', drawText);
+            textAlignSelect.addEventListener('change', drawText);
+            fontSizeInput.addEventListener('input', drawText);
+
+            generateButton.addEventListener('click', function() {
+                const memeDataUrl = memeCanvas.toDataURL();
+                localStorage.setItem('generatedMeme', memeDataUrl);
+                localStorage.setItem('topText', topTextInput.value);
+                localStorage.setItem('bottomText', bottomTextInput.value);
+                localStorage.setItem('textColor', textColorInput.value);
+                localStorage.setItem('fontStyle', fontStyleSelect.value);
+                localStorage.setItem('textAlign', textAlignSelect.value);
+                localStorage.setItem('fontSize', fontSizeInput.value);
+                window.location.href = 'display.html';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background-image: url('watercircle.avif');
+            background-size: cover;
+            background-position: center;
+            color: #333;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        header {
+            background-color: rgba(118, 99, 140, 0.8);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(249, 249, 249, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        input {
+            width: 300px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #6f4caf;
+            color: white;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #9245a0;
+        }
+
+        #meme-canvas {
+            border: 1px solid #000;
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Meme Generator</h1>
+        <p>Create your own memes easily!</p>
+    </header>
+    
+    <div class="container">
+        <!-- Image input -->
+        <input type="file" id="image-input" accept="image/*" />
+
+        <!-- Text inputs -->
+        <div>
+            <input type="text" id="top-text" placeholder="Top text" />
+        </div>
+        
+        <div>
+            <input type="text" id="bottom-text" placeholder="Bottom text" />
+        </div>
+
+        <!-- Button to move to edit page -->
+        <button id="edit-text-button">Edit Meme Text</button>
+        
+        <!-- Canvas to preview meme -->
+        <canvas id="meme-canvas"></canvas>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageInput = document.getElementById('image-input');
+            const memeCanvas = document.getElementById('meme-canvas');
+            const ctx = memeCanvas.getContext('2d');
+            const topTextInput = document.getElementById('top-text');
+            const bottomTextInput = document.getElementById('bottom-text');
+            const editTextButton = document.getElementById('edit-text-button');
+
+            let memeImage = new Image();
+
+            // Handle image upload
+            imageInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        memeImage.src = e.target.result;
+                        memeImage.onload = function() {
+                            // Resize canvas to match the uploaded image
+                            memeCanvas.width = memeImage.width;
+                            memeCanvas.height = memeImage.height;
+                            ctx.drawImage(memeImage, 0, 0); // Draw the image on the canvas
+                        };
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Save text and image data to localStorage and redirect to edit page
+            editTextButton.addEventListener('click', function() {
+                const topText = topTextInput.value;
+                const bottomText = bottomTextInput.value;
+
+                // Save top and bottom text to localStorage
+                localStorage.setItem('topText', topText);
+                localStorage.setItem('bottomText', bottomText);
+
+                // Save meme image data to localStorage
+                if (memeCanvas.width && memeCanvas.height) {
+                    localStorage.setItem('memeDataUrl', memeCanvas.toDataURL());
+                }
+
+                // Redirect to edit page
+                window.location.href = 'edit.html';
+            });
+        });
+    </script>
+</body>
+</html>
